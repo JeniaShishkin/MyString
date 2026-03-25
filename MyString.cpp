@@ -1,6 +1,6 @@
 #include "MyString.h"
 
-MyString::MyString(const char* str = "")
+MyString::MyString(const char* str)
 {
 	m_size = strlen(str); 
 	m_str = new char[m_size + sizeof('\0')];
@@ -9,13 +9,14 @@ MyString::MyString(const char* str = "")
 
 MyString::MyString(const MyString& other) 
 {
+    std::cout << "Copy constructor is invoked" << std::endl;
 	int allocatedMemory = other.m_size + sizeof('\0');
 	m_str = new char[allocatedMemory];
 	memcpy(m_str, other.m_str, allocatedMemory);
 	m_size = other.m_size; 
 }
 
-auto MyString::operator<=>(const MyString& other) const
+std::strong_ordering MyString::operator<=>(const MyString& other) const
 {
 	int cmp = std::strcmp(this->m_str, other.m_str);
     if (cmp < 0) return std::strong_ordering::less;

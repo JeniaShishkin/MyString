@@ -47,24 +47,24 @@ int main()
 {
 	MyString s1{"Hello"};
 	MyString s2{"goodbye!"};
-	s1 = s2;
-	std::cout << s1 << std::endl;
-	std::cout << s2.size() << std:: endl; // I want it in O(1): MyString s3{"hello"}; std::cout << s3.size(); // print 5
-	std::cout << ("abc" < s2) << std::endl;
-	std::cout << (s2 < "abc") << std::endl;
-	std::cout << (s1 == s2) << std::endl;
-	std::cout << (s1 == "abc") << std::endl;
-	std::cout << ("abc" == s1) << std::endl;
-	std::cout << (s1 < s2) << std::endl;
-	std::cout << (s1 < "abc" )<< std::endl;  // same for the rest of the operators.... support both sides to be const char *
-	std::cout << (s1 <= s2) << std::endl;
-	std::cout << (s1 > s2) << std::endl;
-	std::cout << (s1 >= s2) << std::endl;
-	std::cout << (s1 != s2) << std::endl;
-	std::cout << (s1 = s2) << std::endl;
-	std::cout << (s1 += s2) << std::endl; // also s1 += "abc"
-	s1[3]; // access the character at idx 3. accessing out of bounds character throws an exception
-	s1.isEmpty();
+	s1 = std::move(s2);
+	std::cout << s2.size() << std::endl;
+//	std::cout << s2.size() << std:: endl; // I want it in O(1): MyString s3{"hello"}; std::cout << s3.size(); // print 5
+//	std::cout << ("abc" < s2) << std::endl;
+//	std::cout << (s2 < "abc") << std::endl;
+//	std::cout << (s1 == s2) << std::endl;
+//	std::cout << (s1 == "abc") << std::endl;
+//	std::cout << ("abc" == s1) << std::endl;
+//	std::cout << (s1 < s2) << std::endl;
+//	std::cout << (s1 < "abc" )<< std::endl;  // same for the rest of the operators.... support both sides to be const char *
+//	std::cout << (s1 <= s2) << std::endl;
+//	std::cout << (s1 > s2) << std::endl;
+//	std::cout << (s1 >= s2) << std::endl;
+//	std::cout << (s1 != s2) << std::endl;
+//	std::cout << (s1 = s2) << std::endl;
+//	std::cout << (s1 += s2) << std::endl; // also s1 += "abc"
+//	s1[3]; // access the character at idx 3. accessing out of bounds character throws an exception
+//	s1.isEmpty();
 //	testSizeAfterDefaultCtor();
 //	testSizeAfterCString();
 	return 0;
