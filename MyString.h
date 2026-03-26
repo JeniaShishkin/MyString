@@ -10,13 +10,14 @@
 class MyString
 {
 public:
-	MyString(const char* str = "");
+	MyString() : m_str(nullptr), m_size(0) { }
+	MyString(const char* str);
 	MyString(const MyString& other); 
-	MyString(MyString &&other) noexcept : m_str(nullptr), m_size(0) { std::cout << "Move constructor is invoked" << std::endl; swap(other); } // Initialize new instance, then steal information from the other one.
+	MyString(MyString&& other) noexcept : MyString() { swap(other); } // Initialize new instance, then steal information from the other one.
 
 	/* OPERATORS */
-	const char operator[](const int index) const { if(index < 0 || index >= m_size) throw std::out_of_range("Index out of range.\n"); return *(m_str + index) ; }
-	std::strong_ordering operator<=>(const MyString& other) const;
+	const char& operator[](const int index) const { if(index < 0 || index >= m_size) throw std::out_of_range("Index out of range.\n"); return *(m_str + index) ; }
+	friend std::strong_ordering operator<=>(const MyString& a, const MyString& b);
 	bool operator==(const MyString& other) const { return std::strcmp(m_str, other.m_str) == 0; }
 	MyString operator+(const MyString& other) const;
 	MyString& operator+=(const MyString& other) { return *this = *this + other ; }

@@ -7,18 +7,17 @@ MyString::MyString(const char* str)
 	memcpy(m_str, str, m_size + sizeof('\0'));
 }
 
-MyString::MyString(const MyString& other) 
+MyString::MyString(const MyString& other) : m_size(other.m_size) 
 {
-    std::cout << "Copy constructor is invoked" << std::endl;
+    if(!other.m_str) { m_str = nullptr; return; }
 	int allocatedMemory = other.m_size + sizeof('\0');
 	m_str = new char[allocatedMemory];
 	memcpy(m_str, other.m_str, allocatedMemory);
-	m_size = other.m_size; 
 }
 
-std::strong_ordering MyString::operator<=>(const MyString& other) const
+std::strong_ordering operator<=>(const MyString& a, const MyString& b)
 {
-	int cmp = std::strcmp(this->m_str, other.m_str);
+	int cmp = std::strcmp(a.m_str, b.m_str);
     if (cmp < 0) return std::strong_ordering::less;
     if (cmp > 0) return std::strong_ordering::greater;
     return std::strong_ordering::equal;
