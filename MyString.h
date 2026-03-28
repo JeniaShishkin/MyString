@@ -10,7 +10,7 @@
 class MyString
 {
 public:
-	MyString() : m_str(nullptr), m_size(0) { }
+	MyString() : m_data{} { }
 	MyString(const char* str);
 	MyString(const MyString& other); 
 	MyString(MyString&& other) noexcept : MyString() { swap(other); } // Initialize new instance, then steal information from the other one.
@@ -32,14 +32,41 @@ public:
 	// Extra functions.
 	void swap(MyString &other) noexcept { using std::swap; swap(m_str, other.m_str); swap(m_size, other.m_size) ; }
 	bool isEmpty() const noexcept { return m_size == 0 ; }
-	int size() const noexcept { return m_size ; } 
+	size_t size() const noexcept { return isSSO(m_data.longString.size) ? strlen(m_data.shortString) : m_data.longString.size & ~MSBIT ; } 
 
-	~MyString() { delete[] m_str; m_str = nullptr; m_size = 0 ; }	
+	~MyString() { if (!isSSO(m_data.longString.size)) { delete[] m_data.longString.longStringPtr; }	}
 
 private:
-	char* m_str;
-	int m_size = 0;
-};
- 
 
+	static constexpr int BITS_IN_BYTE = 8;
+	static constexpr int MSBIT_IDX = (sizeof(size_t) * BITS_IN_BYTE);
+	static constexpr size_t MSBIT = size_t(1) << (MSBIT_IDX - 1);
+
+
+	union SSO
+	{
+		SSO() : shortString{} { }
+		SSO(char *s, size_t size) : longString(s, size) { }
+		struct {
+			char* longStringPtr;
+			size_t size;
+		} longString;
+		char shortString[sizeof(longString)];
+	};
+
+	static bool isSSO(char* shortString);
+	static bool isSSO(size_t length);
+	SSO m_data;
+};
+
+
+
+bool MyString::isSSO(char* shortString)
+{
+	return (shortString[ sizeof(SSO) - 1 ]  == '\0');
+}
  
+bool MyString::isSSO(size_t length)
+{
+	return (length - sizeof('\0') <= sizeof(m_data));
+}

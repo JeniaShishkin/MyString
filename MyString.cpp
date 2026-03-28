@@ -2,14 +2,24 @@
 
 MyString::MyString(const char* str)
 {
-	m_size = strlen(str); 
-	m_str = new char[m_size + sizeof('\0')];
-	memcpy(m_str, str, m_size + sizeof('\0'));
+
+	size_t length = strlen(str);
+    if (isSSO(length))
+    {
+        strcpy_s(m_data.shortString, length, str);
+    }
+    else
+    {
+	    m_data.longString.longStringPtr = new char[length + sizeof('\0')];
+	    memcpy(m_data.longString.longStringPtr, str, length + sizeof('\0'));
+        m_data.longString.size = (length | 80000000) ;
+    }
 }
 
-MyString::MyString(const MyString& other) : m_size(other.m_size) 
+MyString::MyString(const MyString& other)
 {
-    if(!other.m_str) { m_str = nullptr; return; }
+    if(!other.m_data) { m_str = nullptr; return; }
+
 	int allocatedMemory = other.m_size + sizeof('\0');
 	m_str = new char[allocatedMemory];
 	memcpy(m_str, other.m_str, allocatedMemory);
@@ -34,3 +44,4 @@ MyString MyString::operator+(const MyString& other) const
 	delete[] newString;
 	return newMyString;
 }
+
