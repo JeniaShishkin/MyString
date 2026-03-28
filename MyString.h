@@ -22,12 +22,13 @@ public:
 	bool operator==(const MyString& other) const noexcept;
 	MyString operator+(const MyString& other) const;
 	MyString& operator+=(const MyString& other) { return *this = *this + other ; }
-    // friend std::ostream& operator<<(std::ostream& os, const MyString& s) { os << s.m_str; return os ; }
+    friend std::ostream& operator<<(std::ostream& os, const MyString& s);
 
 	MyString& operator=(MyString other) { swap(other); return *this; }; // Supposed to be valid for both copy ans move.
-	
+
 	// Extra functions.
 	void swap(MyString &other) noexcept { using std::swap; swap(m_data, other.m_data); }
+	bool isEmpty() { return size() == 0; }
 	size_t size() const noexcept { return isSSO() ? ssoSize() : m_data.longString.size; }
 	size_t ssoSize() const noexcept { return m_data.shortString[sizeof(SSO) - 1] & SIZE_MASK; }
 
@@ -59,4 +60,5 @@ private:
 	};
 	SSO m_data;
 };
+
 

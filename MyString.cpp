@@ -21,7 +21,7 @@ MyString::MyString(const MyString& other)
 	size_t length = other.size();
 	if (other.isSSO())
 	{
-		std::memcpy(m_data.shortString, other.m_data.shortString, length + 1);
+		std::memcpy(m_data.shortString, other.m_data.shortString, sizeof(SSO));
     }
 	else
 	{
@@ -31,28 +31,28 @@ MyString::MyString(const MyString& other)
     }
 }
 
+
 MyString::MyString(MyString&& other) noexcept 
 {
     if (other.isSSO()) 
 	{
-        std::memcpy(m_data.shortString, other.m_data.shortString, sizeof(SSO)); // Copying the entire 16 bytes, including metadata.
+        std::memcpy(m_data.shortString, other.m_data.shortString, sizeof(SSO)); // moving the entire 16 bytes, including metadata.
 		other.m_data.shortString[0] = '\0';
 		other.m_data.shortString[SHORT_STR_LENGTH] = SSO_MASK; // isSSO = true, size = 0.
     }
 	else
 	{
-        m_data.longString = other.m_data.longString;
-        other.m_data.longString.longStringPtr = nullptr;
+        m_data.longString = other.m_data.longString; // default assignment operator of struct, which is what we want.
+        other.m_data.longString.longStringPtr = nullptr; // stealing resources and leaving other with nothing.
         other.m_data.longString.size = 0;
     }
 }
 
 std::strong_ordering MyString::operator<=>(const MyString& other) const noexcept 
 {
-    size_t length = std::min(size(), other.size());
     int cmp = strcmp(data(), other.data());
-    if (cmp != 0) return cmp < 0 ? std::strong_ordering::less : std::strong_ordering::greater;
-    return size() <=> other.size(); // Size returns value that is not boolean, therefore used default spaceship operator between integers.
+	if (cmp != 0) return cmp < 0 ? std::strong_ordering::less : std::strong_ordering::greater;
+	return std::strong_ordering::equal;
 }
 
 MyString MyString::operator+(const MyString& other) const {
@@ -62,15 +62,13 @@ MyString MyString::operator+(const MyString& other) const {
 	{
         std::memcpy(result.m_data.shortString, data(), size());
         std::memcpy(result.m_data.shortString + size(), other.data(), other.size());
-        result.m_data.shortString[totalLen] = '\0';
-        result.m_data.shortString[SHORT_STR_LENGTH] = static_cast<unsigned char>(totalLen) | SSO_MASK;
+        result.m_data.shortString[SHORT_STR_LENGTH] = static_cast<unsigned char>(totalLen) | SSO_MASK; // cast TotalLen to same type as SSO_MASK.
     }
 	else  // Long string
 	{ 
         char* newString = new char[totalLen + 1];
         std::memcpy(newString, data(), size());
         std::memcpy(newString + size(), other.data(), other.size());
-        newString[totalLen] = '\0';
         result.m_data.longString.longStringPtr = newString;
         result.m_data.longString.size = totalLen;
     }
@@ -83,4 +81,14 @@ bool MyString::operator==(const MyString& other) const noexcept
 {
     if (size() != other.size()) return false;
     return strcmp(data(), other.data()) == 0;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const MyString& s) 
+{
+	if(s.isSSO()) { os << s.m_data.shortString; }
+
+	else { os << s.m_data.longString.longStringPtr; }
+
+	return os;  
 }

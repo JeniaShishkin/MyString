@@ -1,71 +1,105 @@
 #include "MyString.h"
+#include <cassert>
+#include <iostream>
 
-// support move ctor + move assignment
-// can use ANY c-function but no functions from std::string or std collection.
-// the delete operator to use on arrays is delete[] (in fact "new int[5]" uses operator new[] and not operator new)
- 
- 
-// writing auto tests
- 
-void testSizeAfterDefaultCtor()
-{
-	MyString s1{};
-	assert(s1.size() == 0);
-	assert(s1.isEmpty());
+void testDefaultCtor() {
+    MyString s;
+    assert(s.size() == 0);
+    assert(s.isEmpty());
 }
- 
-void testSizeAfterCString()
-{
-	MyString s1{"abc"};
-	MyString s2{s1};
-	assert(s1.size() == 3);
-	assert(!s1.isEmpty());
-	assert(s1[0] == 'a');
-	assert(s1[1] == 'b');
-	assert(s1[2] == 'c');
- 
-	try
-	{
-		s1[-1];
-		assert(!"did not throw on access to -1");
-	}
-	catch (const std::out_of_range &)
-	{
-	}
- 
-	try
-	{
-		s1[3];
-		assert(!"did not throw on access to -1");
-	}
-	catch (const std::out_of_range &)
-	{
-	}
+
+void testCStringCtorAndCopy() {
+    MyString s1{"abc"};
+    MyString s2{s1}; // copy constructor
+
+    assert(s1.size() == 3);
+    assert(s2.size() == 3);
+    assert(s1[0] == 'a');
+    assert(s2[2] == 'c');
+    assert(s1 == s2);
+    assert(!(s1 != s2));
+
+    // Out-of-range access
+    try { s1[3]; assert(false && "Did not throw"); }
+    catch (const std::out_of_range&) {}
+    try { s1[-1]; assert(false && "Did not throw"); }
+    catch (const std::out_of_range&) {}
 }
- 
-int main()
-{
-	MyString s1{"Hello"};
-	MyString s2{"goodbye!"};
-	s1 = std::move(s2);
-	std::cout << s2.size() << std::endl;
-//	std::cout << s2.size() << std:: endl; // I want it in O(1): MyString s3{"hello"}; std::cout << s3.size(); // print 5
-//	std::cout << ("abc" < s2) << std::endl;
-//	std::cout << (s2 < "abc") << std::endl;
-//	std::cout << (s1 == s2) << std::endl;
-//	std::cout << (s1 == "abc") << std::endl;
-//	std::cout << ("abc" == s1) << std::endl;
-//	std::cout << (s1 < s2) << std::endl;
-//	std::cout << (s1 < "abc" )<< std::endl;  // same for the rest of the operators.... support both sides to be const char *
-//	std::cout << (s1 <= s2) << std::endl;
-//	std::cout << (s1 > s2) << std::endl;
-//	std::cout << (s1 >= s2) << std::endl;
-//	std::cout << (s1 != s2) << std::endl;
-//	std::cout << (s1 = s2) << std::endl;
-//	std::cout << (s1 += s2) << std::endl; // also s1 += "abc"
-//	s1[3]; // access the character at idx 3. accessing out of bounds character throws an exception
-//	s1.isEmpty();
-//	testSizeAfterDefaultCtor();
-//	testSizeAfterCString();
-	return 0;
+
+void testMoveCtorAndAssignment() {
+    MyString s1{"abcdef"};
+    MyString s2{std::move(s1)};
+    assert(s2.size() == 6);
+    assert(s1.size() == 0 || s1.isEmpty()); // s1 is in valid but unspecified state
+
+    MyString s3;
+    s3 = std::move(s2);
+    assert(s3.size() == 6);
+    assert(s2.size() == 0 || s2.isEmpty());
+}
+
+void testSSOandNonSSO() {
+    MyString s1{"short"};                 // SSO
+    MyString s2{"this string is definitely longer than 15"}; // non-SSO
+
+    assert(s1.isSSO());
+    assert(!s2.isSSO());
+
+    assert(s1.size() == 5);
+    assert(s2.size() == std::strlen("this string is definitely longer than 15"));
+}
+
+void testOperators() {
+    MyString s1{"abc"};
+    MyString s2{"xyz"};
+
+    // Comparison
+    assert(s1 < s2);
+    assert(s1 <= s2);
+    assert(!(s1 > s2));
+    assert(!(s1 >= s2));
+    assert(s1 != s2);
+    assert(!(s1 == s2));
+
+    // Concatenation
+    MyString s3 = s1 + s2;
+    assert(s3.size() == s1.size() + s2.size());
+    assert(s3[0] == 'a');
+    assert(s3[4] == 'y');
+
+    s1 += s2;
+    assert(s1.size() == s3.size());
+    assert(s1 == s3);
+}
+
+void testCharAccess() {
+    MyString s{"hello"};
+    assert(s[0] == 'h');
+    assert(s[4] == 'o');
+    try { s[5]; assert(false && "Out of bounds did not throw"); }
+    catch (const std::out_of_range&) {}
+}
+
+void testAll() {
+    testDefaultCtor();
+    testCStringCtorAndCopy();
+    testMoveCtorAndAssignment();
+    testSSOandNonSSO();
+    testOperators();
+    testCharAccess();
+    std::cout << "All tests passed!" << std::endl;
+}
+
+int main() {
+    testAll();
+
+    // Additional interactive tests
+    MyString s1{"hello"};
+    MyString s2{"world"};
+    std::cout << s1 << " + " << s2 << " = " << (s1 + s2) << std::endl;
+
+    s1 += "abc";
+    std::cout << "After += 'abc': " << s1 << std::endl;
+
+    return 0;
 }
